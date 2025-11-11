@@ -1,0 +1,30 @@
+> summary(dwage)
+    REF_DATE     Value       
+ Min.   :2017    Min.   :    20  
+ 1st Qu.:2018    1st Qu.:   170  
+ Median :2020    Median :   650  
+ Mean   :2020    Mean   :  4153  
+ 3rd Qu.:2022    3rd Qu.:  2070  
+ Max.   :2023    Max.   :287030  
+                 NA's   :122     
+
+
+> summary(dCmaCount)
+   REF_DATE        VALUE         
+ Length:31000      Min.   :    11.0  
+ Class :character  1st Qu.:   511.5  
+ Mode  :character  Median :  3578.0  
+                   Mean   : 11411.6  
+                   3rd Qu.:  8678.0  
+                   Max.   :190771.0  
+                   NA's   :22940     
+
+
+> summary(dCanCount)
+   REF_DATE          VALUE       
+ Length:875         Min.   :   671  
+ Class :character   1st Qu.:  4604  
+ Mode  :character   Median :  5537  
+                    Mean   :154198  
+                    3rd Qu.:114416  
+                    Max.   :939038  
