@@ -10,15 +10,27 @@ library(panelView)
 
 
 ggplot(dwage, aes(REF_DATE, VALUE)) +
+  labs(x = "Year", y = "Wage Filings") +
   geom_point(color = "red") +
-  facet_wrap(~ NAICS, scales = "free_y" ) +
+  facet_wrap(~ NAICS, scales = "free" ) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+ggplot(dCmaCount_filtered, aes(REF_DATE, VALUE)) +
+  labs(x = "Year", y = "Number of Businesses") +
+  geom_point(aes(color = factor(GEO), shape = factor(Industry))) +
+  facet_wrap(~ Industry, scales = "free") +
+  theme_minimal() 
 
-#This doesnt work idk why
+#ggplot for dCanCount by industry
+ggplot(dCanCount, aes(REF_DATE, VALUE)) +
+  labs(x = "Year", y = "Number of Businesses") +
+  geom_line() + 
+  geom_vline(aes(xintercept = as.numeric(as.Date("2020-03-01"))), color = "red") +
+  facet_wrap(~ Industry, scales = "free") +
+  theme_minimal() 
+
 ggplot(dwage, aes(REF_DATE, VALUE)) +
-  geom_line(color = "red") +
-  facet_grid(GEO ~ NAICS) +
-  theme_minimal()
-
+  labs(x = "Year", y = "Number of Businesses") +
+  geom_point(aes(color = factor(GEO), shape = factor(NAICS))) +
+  theme_minimal() 
