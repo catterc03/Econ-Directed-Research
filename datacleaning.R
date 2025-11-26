@@ -1,5 +1,5 @@
 # Name: Christopher Catterick
-# Version 1.0
+# Version 3.0
 # Desc: Base program to intake and clean data for ECON 3P60 research
 #
 library(tidyverse)
@@ -7,15 +7,17 @@ library(dplyr)
 library(ggplot2)
 library(fixest)
 library(lubridate)
+library(canadianmaps)
+library(sf)
 
 dwage <- wage_by_industry
 dCmaCount <- `3310072201_databaseLoadingData.(2)`
 dCanCount <- `3310072201_databaseLoadingData.(1)`
+dCSI <- CSI.Data
 
 #Remove unused variables from base dataset and renamed NAICS codes
 dwage <- dwage %>%
   mutate(
-    DGUID = NULL,
     Statistics = NULL,
     UOM = NULL,
     UOM_ID = NULL,
@@ -34,7 +36,6 @@ rename(NAICS = Main.industry.based.on.the.North.American.Industry.Classification
 #Remove unused variables from base dataset  
 dCmaCount <- dCmaCount %>%
   mutate(
-    DGUID = NULL,
     Statistics = NULL,
     UOM = NULL,
     UOM_ID = NULL,
@@ -54,7 +55,6 @@ dCmaCount <- dCmaCount %>%
 #Remove unused variables from base dataset
 dCanCount <- dCanCount %>%
   mutate(
-    DGUID = NULL,
     Statistics = NULL,
     UOM = NULL,
     UOM_ID = NULL,
@@ -93,4 +93,20 @@ dCmaCount$REF_DATE <- as.Date(paste0(dCmaCount$REF_DATE, "-01"))#Update date for
 dCmaCount_filtered <- dCmaCount %>%
   filter(Industry != "Business sector industries [T004]")
 
+##ShapeFile stuff
 
+csdData <- st_read("Data/CSD.shp")
+
+csdData <- csdData %>%
+  mutate(
+    CMAUID = NULL,
+    CMAPUID = NULL,
+    DGUIDP = NULL,
+    CMANAME = NULL,
+    CMATYPE = NULL,
+    LANDAREA = NULL,
+    PRUID = NULL,
+  )
+
+dwage <- dwage %>%
+  left_join(csdData, by ="DGUID")
