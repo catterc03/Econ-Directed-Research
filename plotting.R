@@ -7,6 +7,7 @@ library(tidyverse)
 library(ggplot2)
 library(dplyr)
 library(panelView)
+library(canadianmaps)
 
 
 ggplot(dwage, aes(REF_DATE, VALUE)) +
@@ -34,3 +35,10 @@ ggplot(dwage, aes(REF_DATE, VALUE)) +
   labs(x = "Year", y = "Number of Businesses") +
   geom_point(aes(color = factor(GEO), shape = factor(NAICS))) +
   theme_minimal() 
+
+ggplot() +
+  geom_sf(CSDMap,"gray90","black") + # Base map layer
+  geom_sf(csdData, "red", color = "black",0.5) + # Custom shape layer (on top)
+  theme_minimal() +
+  labs(title = "Map of Canada Census Sub-Divisions")
+

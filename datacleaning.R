@@ -13,7 +13,7 @@ library(sf)
 dwage <- wage_by_industry
 dCmaCount <- `3310072201_databaseLoadingData.(2)`
 dCanCount <- `3310072201_databaseLoadingData.(1)`
-dCSI <- CSI.Data
+dCSI <- CSIData
 
 #Remove unused variables from base dataset and renamed NAICS codes
 dwage <- dwage %>%
@@ -93,11 +93,20 @@ dCmaCount$REF_DATE <- as.Date(paste0(dCmaCount$REF_DATE, "-01"))#Update date for
 dCmaCount_filtered <- dCmaCount %>%
   filter(Industry != "Business sector industries [T004]")
 
+dCSI <- dCSI %>%
+  mutate(clusterHQ = case_when(
+    Cluster == "Digital Technology Cluster" ~ "Vancouver, BC",
+    Cluster == "Protein Industries Cluster" ~ "Regina, SA",
+    Cluster == "Advanced Manufacturing Cluster" ~ "Hamilton, ON",
+    Cluster == "Ocean Cluster" ~ "St. Johns, NL",
+    Cluster == "Scale AI Cluster" ~ "Montreal, QC"
+  ))
+
 ##ShapeFile stuff
 
-csdData <- st_read("Data/CSD.shp")
+csdData21 <- st_read("Data/Shapefiles21/CSD.shp")
 
-csdData <- csdData %>%
+csdData21 <- csdData21 %>%
   mutate(
     CMAUID = NULL,
     CMAPUID = NULL,
@@ -110,3 +119,12 @@ csdData <- csdData %>%
 
 dwage <- dwage %>%
   left_join(csdData, by ="DGUID")
+
+csdData16 <- st_read("Data/Shapefiles16/CSD16.shp")
+
+csdData16 <- csdData16 %>%
+  mutate(
+    
+  )
+
+
