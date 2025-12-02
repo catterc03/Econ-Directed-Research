@@ -1,5 +1,5 @@
 # Name: Christopher Catterick
-# Version 3.0
+# Version 4.0
 # Desc: Base program to intake and clean data for ECON 3P60 research
 #
 library(tidyverse)
@@ -9,11 +9,13 @@ library(fixest)
 library(lubridate)
 library(canadianmaps)
 library(sf)
+library(fuzzyjoin)
 
 dwage <- wage_by_industry
 dCmaCount <- `3310072201_databaseLoadingData.(2)`
 dCanCount <- `3310072201_databaseLoadingData.(1)`
 dCSI <- CSIData
+shapeContext <- shapes21context
 
 #Remove unused variables from base dataset and renamed NAICS codes
 dwage <- dwage %>%
@@ -93,6 +95,7 @@ dCmaCount$REF_DATE <- as.Date(paste0(dCmaCount$REF_DATE, "-01"))#Update date for
 dCmaCount_filtered <- dCmaCount %>%
   filter(Industry != "Business sector industries [T004]")
 
+#add cluster HQ locales 
 dCSI <- dCSI %>%
   mutate(clusterHQ = case_when(
     Cluster == "Digital Technology Cluster" ~ "Vancouver, BC",
@@ -104,9 +107,9 @@ dCSI <- dCSI %>%
 
 ##ShapeFile stuff
 
-csdData21 <- st_read("Data/Shapefiles21/CSD.shp")
+csdData21 <- st_read("Data/Shapefiles21/CSD.shp") #read file
 
-csdData21 <- csdData21 %>%
+csdData21 <- csdData21 %>% #clean shapefile for irrelevant variables
   mutate(
     CMAUID = NULL,
     CMAPUID = NULL,
@@ -117,14 +120,42 @@ csdData21 <- csdData21 %>%
     PRUID = NULL,
   )
 
+#left join shape data into dwage
 dwage <- dwage %>%
-  left_join(csdData, by ="DGUID")
+  left_join(csdData21, by ="DGUID")
 
-csdData16 <- st_read("Data/Shapefiles16/CSD16.shp")
+#Left Join shapefiles given project location 
+dCSI <- regex_left_join(
+  dCSI,
+  csdData21,
+  by = c("Project.Location" = "CSDNAME")
+)
 
-csdData16 <- csdData16 %>%
+#Left join shapefiles given HQ location
+dCSI <- regex_left_join(
+  dCSI,
+  csdData21,
+  by = c("clusterHQ" = "CSDNAME")
+)
+
+#clean
+dCSI <- dCSI %>%
   mutate(
-    
-  )
+    CSDUID.x = NULL,
+    CSDTYPE.x = NULL,
+    DGUID.x = NULL,
+    CSDNAME.x = NULL,
+    CSDUID.y = NULL,
+    CSDTYPE.y = NULL,
+    DGUID.y = NULL,
+    CSDNAME.y = NULL,
+  ) %>%
+  rename("Project.Geometry" = "geometry.x",
+         "HQ.Geometry" = "geometry.y")
 
+#Compute distance variable between project locale and HQ
+dCSI <- dCSI %>%
+  mutate(dist = as.numeric(
+    st_distance(Project.Geometry, HQ.Geometry, by_element = TRUE)
+  ))
 
