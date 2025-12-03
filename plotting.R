@@ -1,4 +1,5 @@
-# Name: Christopher Catterick
+#Christopher Catterick (7224520)
+#ECON 3P60 - Directed Research
 # Version 1.0
 # Desc: Program to plot data
 #

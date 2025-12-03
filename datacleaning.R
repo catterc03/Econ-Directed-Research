@@ -1,4 +1,5 @@
-# Name: Christopher Catterick
+#Christopher Catterick (7224520)
+#ECON 3P60 - Directed Research
 # Version 4.0
 # Desc: Base program to intake and clean data for ECON 3P60 research
 #
@@ -10,6 +11,8 @@ library(lubridate)
 library(canadianmaps)
 library(sf)
 library(fuzzyjoin)
+library(rddtools)
+library(magrittr)
 
 dwage <- wage_by_industry
 dCmaCount <- `3310072201_databaseLoadingData.(2)`
@@ -103,7 +106,9 @@ dCSI <- dCSI %>%
     Cluster == "Advanced Manufacturing Cluster" ~ "Hamilton, ON",
     Cluster == "Ocean Cluster" ~ "St. Johns, NL",
     Cluster == "Scale AI Cluster" ~ "Montreal, QC"
-  ))
+  )) %>%
+  rename("Funding" = "Global.Innovation.Clusters.Funding..M.")
+#Rename Cities for conformity with shapefiles
 dCSI$clusterHQ[dCSI$clusterHQ == "St. Johns, NL"] <- "St. John's"
 dCSI$clusterHQ[dCSI$clusterHQ == "Montreal, QC"] <- "Montréal, QC"
 dCSI$Project.Location[dCSI$Project.Location == "Montreal, QC"] <- "Montréal, QC"
@@ -166,3 +171,4 @@ dCSI <- dCSI %>%
     st_distance(Project.Geometry, HQ.Geometry, by_element = TRUE)
   ))
 
+#write.csv(dCSI, "ProjData_geom.csv") - Write CSV for aggregate dataset. BIG FILE
