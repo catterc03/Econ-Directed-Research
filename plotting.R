@@ -36,9 +36,21 @@ ggplot(dwage, aes(REF_DATE, VALUE)) +
   geom_point(aes(color = factor(GEO), shape = factor(NAICS))) +
   theme_minimal() 
 
+dCSI <- st_as_sf(dCSI, sf_column_name = "Project.Geometry")
+
 ggplot() +
-  geom_sf(CSDMap,"gray90","black") + # Base map layer
-  geom_sf(csdData, "red", color = "black",0.5) + # Custom shape layer (on top)
+  geom_sf(data = CSD, fill = "gray90", color = "black") +
+  geom_sf(data = dCSI, fill = "red", color = "black", size = 0.5) +
   theme_minimal() +
   labs(title = "Map of Canada Census Sub-Divisions")
+
+CSD_provinces <- CSD %>%
+  filter(PRUID %in% c(10, 11, 12, 13, 24, 35, 46, 47, 48, 59))
+
+ggplot() +
+  geom_sf(data = CSD_provinces, fill = "gray90", color = "black") +
+  geom_sf(data = dCSI, fill = "red", color = "black", size = 0.5) +
+  theme_minimal() +
+  labs(title = "Map of Canadian Innovation Super Cluster Projects")
+
 

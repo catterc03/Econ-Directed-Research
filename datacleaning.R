@@ -104,6 +104,12 @@ dCSI <- dCSI %>%
     Cluster == "Ocean Cluster" ~ "St. Johns, NL",
     Cluster == "Scale AI Cluster" ~ "Montreal, QC"
   ))
+dCSI$clusterHQ[dCSI$clusterHQ == "St. Johns, NL"] <- "St. John's"
+dCSI$clusterHQ[dCSI$clusterHQ == "Montreal, QC"] <- "Montréal, QC"
+dCSI$Project.Location[dCSI$Project.Location == "Montreal, QC"] <- "Montréal, QC"
+dCSI$Project.Location[dCSI$Project.Location == "Quebec City, QC"] <- "Québec City, QC"
+
+
 
 ##ShapeFile stuff
 
@@ -152,6 +158,7 @@ dCSI <- dCSI %>%
   ) %>%
   rename("Project.Geometry" = "geometry.x",
          "HQ.Geometry" = "geometry.y")
+
 
 #Compute distance variable between project locale and HQ
 dCSI <- dCSI %>%
