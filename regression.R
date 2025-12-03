@@ -5,29 +5,22 @@
 
 library(rdrobust)
 
-lm_dist <- dCSI %>%
-  mutate(threshold = ifelse(dist >= 1378000, 1, 0))
+#defining treatment based on whether a project geometry is within the HQ geom or not
+#Uses pre calculated distance variable (see datacleaning.R) and assumes 0 to be within
+treated <- dCSI %>%
+  mutate(threshold = ifelse(dist <= 0, 1,0)) 
+#removing any NA binary assignment
+treated <- treated %>%
+  drop_na()
 
-initlm <- lm(dCSI$Funding ~ threshold + I(dist - 1378000), data = lm_dist) #regress funding on distance
-
-#Non-functioning
-wagelm <- lm(dwage$VALUE ~ threshold + I(dist - 1378000), data = lm_dist)
-busicountcanlm <- lm(dCanCount$VALUE ~ threshold + I(dist - 1378000), data = lm_dist)
-busicountcmalm <- lm(dCmaCount$VALUE ~ threshold + I(dist - 1378000), data = lm_dist)
-
-summary(initlm)
-
-#with rdrobust
-
-rdrobinit <- rdrobust(
- y = dCSI$Funding,
- x = dCSI$dist,
- c = 1378000,
- fuzzy = lm_dist$threshold
+#NEED TO DEFINE TREATMENT IN A FUZZY CONTEXT
+rd <- rdrobust(
+ y = treated$Funding,
+ x = treated$dist,
+ # c = RD CUTOFF - NEEDS TO BE EDGE OF CSD IN QUESTION ?
+ # fuzzy = treated$threshold
+ 
 )
 
-summary(rdrobinit)
+summary(rd)
 
-rdplot(y = dCSI$Funding, x = dCSI$dist, c = 1378000,
-       x.label = "Distance", y.label = "Funding",
-       title = "RDD: Funding vs Distance")

@@ -76,27 +76,22 @@ dCanCount <- dCanCount %>%
   )
 
 dCanCount$REF_DATE <- as.Date(paste0(dCanCount$REF_DATE, "-01")) #Update date format
-dCanCount_filtered <- dCanCount %>%
-  filter(Industry != "Business sector industries [T004]")
-
 
 #Modify this code to fit whichever dataset you want to output for, its just easier
 #than rewriting over and over
-dCmaCount %>%
-  group_by(Industry) %>%            
-  summarise(
-    count = n(),                    
-    mean = mean(VALUE, na.rm = TRUE),
-    sd = sd(VALUE, na.rm = TRUE),
-    min = min(VALUE, na.rm = TRUE),
-    max = max(VALUE, na.rm = TRUE),
-    median = median(VALUE, na.rm = TRUE),
-    .groups = "drop"                 
-  )
+# dCmaCount %>%
+#   group_by(Industry) %>%            
+#   summarise(
+#     count = n(),                    
+#     mean = mean(VALUE, na.rm = TRUE),
+#     sd = sd(VALUE, na.rm = TRUE),
+#     min = min(VALUE, na.rm = TRUE),
+#     max = max(VALUE, na.rm = TRUE),
+#     median = median(VALUE, na.rm = TRUE),
+#     .groups = "drop"                 
+#   )
 
 dCmaCount$REF_DATE <- as.Date(paste0(dCmaCount$REF_DATE, "-01"))#Update date format
-dCmaCount_filtered <- dCmaCount %>%
-  filter(Industry != "Business sector industries [T004]")
 
 #add cluster HQ locales 
 dCSI <- dCSI %>%
@@ -136,20 +131,17 @@ dwage <- dwage %>%
   left_join(csdData21, by ="DGUID")
 
 #Left Join shapefiles given project location 
-dCSI <- regex_left_join(
-  dCSI,
-  csdData21,
+dCSI <- regex_left_join( dCSI, csdData21,
   by = c("Project.Location" = "CSDNAME")
 )
 
 #Left join shapefiles given HQ location
-dCSI <- regex_left_join(
-  dCSI,
-  csdData21,
+dCSI <- regex_left_join(dCSI, csdData21,
   by = c("clusterHQ" = "CSDNAME")
 )
 
-#clean
+
+#clean columns and remove duplicates caused by regex join
 dCSI <- dCSI %>%
   mutate(
     CSDUID.x = NULL,
@@ -163,6 +155,8 @@ dCSI <- dCSI %>%
   ) %>%
   rename("Project.Geometry" = "geometry.x",
          "HQ.Geometry" = "geometry.y")
+dCSI <- dCSI %>%
+  distinct(Project.Title.and.Description, .keep_all = TRUE)
 
 
 #Compute distance variable between project locale and HQ
