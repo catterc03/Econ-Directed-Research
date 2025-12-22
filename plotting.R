@@ -10,7 +10,6 @@ library(dplyr)
 library(panelView)
 library(canadianmaps)
 
-
 ggplot(dwage, aes(REF_DATE, VALUE)) +
   labs(x = "Year", y = "Wage Filings") +
   geom_point(color = "red") +

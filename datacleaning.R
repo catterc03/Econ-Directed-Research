@@ -7,18 +7,21 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(fixest)
-library(lubridate)
 library(canadianmaps)
 library(sf)
 library(fuzzyjoin)
 library(rddtools)
-library(magrittr)
+library(janitor)
+library(mapboxapi)
+
 
 dwage <- wage_by_industry
 dCmaCount <- `3310072201_databaseLoadingData.(2)`
 dCanCount <- `3310072201_databaseLoadingData.(1)`
-dCSI <- CSIData
+dCSI <- CSI.Data
 shapeContext <- shapes21context
+FSAShape <- st_read("Data/FSAShapefiles/lfsa000b21a_e.shp")
+csdData21 <- st_read("Data/Shapefiles21/CSD.shp") #read file
 
 #Remove unused variables from base dataset and renamed NAICS codes
 dwage <- dwage %>%
@@ -113,7 +116,7 @@ dCSI$Project.Location[dCSI$Project.Location == "Quebec City, QC"] <- "Québec Ci
 
 ##ShapeFile stuff
 
-csdData21 <- st_read("Data/Shapefiles21/CSD.shp") #read file
+
 
 csdData21 <- csdData21 %>% #clean shapefile for irrelevant variables
   mutate(
@@ -140,6 +143,9 @@ dCSI <- regex_left_join(dCSI, csdData21,
   by = c("clusterHQ" = "CSDNAME")
 )
 
+dCSI <- regex_left_join( dCSI, FSAShape,
+                         by = c("Postal.Code" = "CFSAUID")
+)
 
 #clean columns and remove duplicates caused by regex join
 dCSI <- dCSI %>%
@@ -152,17 +158,27 @@ dCSI <- dCSI %>%
     CSDTYPE.y = NULL,
     DGUID.y = NULL,
     CSDNAME.y = NULL,
+    CFSAUID = NULL,
+    DGUID = NULL,
+    PRUID = NULL,
+    PRNAME = NULL,
+    LANDAREA = NULL,
   ) %>%
   rename("Project.Geometry" = "geometry.x",
-         "HQ.Geometry" = "geometry.y")
+         "HQ.Geometry" = "geometry.y",
+         "FSA.Geometry" = "geometry")
+
+
 dCSI <- dCSI %>%
   distinct(Project.Title.and.Description, .keep_all = TRUE)
 
 
 #Compute distance variable between project locale and HQ
-dCSI <- dCSI %>%
-  mutate(dist = as.numeric(
-    st_distance(Project.Geometry, HQ.Geometry, by_element = TRUE)
-  ))
+
+
+# dCSI <- dCSI %>%
+#  mutate(median = median(Funding))
 
 #write.csv(dCSI, "ProjData_geom.csv") - Write CSV for aggregate dataset. BIG FILE
+
+
