@@ -171,10 +171,14 @@ dCSI <- dCSI %>%
 
 dCSI <- dCSI %>%
   distinct(Project.Title.and.Description, .keep_all = TRUE)
+ 
+FSACentroid <- st_centroid(dCSI$FSA.Geometry) #Take centroid of postal code
+DistanceToBorder <- as.numeric(st_distance(FSACentroid, st_boundary(dCSI$HQ.Geometry)))#calculate distance to border
+insideCheck <- st_within(FSACentroid, dCSI$HQ.Geometry, sparse = FALSE)[,1]
 
-
-#Compute distance variable between project locale and HQ
-
+dCSI <- dCSI %>%
+  mutate(distance = ifelse(insideCheck, -DistanceToBorder, DistanceToBorder)
+    )
 
 # dCSI <- dCSI %>%
 #  mutate(median = median(Funding))
