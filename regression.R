@@ -4,11 +4,14 @@
 #DESC: Script to complete regressions and output results
 
 library(rdrobust)
+library(janitor)
 
 #defining treatment based on whether a project geometry is within the HQ geom or not
 #Uses pre calculated distance variable (see datacleaning.R) and assumes 0 to be within
+
 treated <- dCSI %>%
-  mutate(threshold = ifelse(dist <= 0, 1,0)) 
+  mutate(eligible = as.integer(distance <= 0),
+         treated = as.integer(Funding == 1)) 
 #removing any NA binary assignment
 treated <- treated %>%
   drop_na()
@@ -16,11 +19,21 @@ treated <- treated %>%
 #NEED TO DEFINE TREATMENT IN A FUZZY CONTEXT
 rd <- rdrobust(
  y = treated$Funding,
- x = treated$dist,
- # c = RD CUTOFF - NEEDS TO BE EDGE OF CSD IN QUESTION ?
- # fuzzy = treated$threshold
- 
+ x = treated$distance,
+ fuzzy = treated$threshold,
+ c = 0
 )
 
 summary(rd)
 
+
+
+ggplot(treated, aes(distance, Funding, color = threshold))+
+  geom_smooth(data = treated %>% filter(threshold == 0), method = "lm") +
+  geom_smooth(data = treated %>% filter(threshold == 1), method = "lm" ) +
+  geom_point() #this is a good plot
+
+
+test <- lm(Funding ~ distance, treated)
+
+summary(test)
