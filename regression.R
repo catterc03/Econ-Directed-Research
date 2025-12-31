@@ -10,30 +10,23 @@ library(janitor)
 #Uses pre calculated distance variable (see datacleaning.R) and assumes 0 to be within
 
 treated <- dCSI %>%
-  mutate(eligible = as.integer(distance <= 0),
-         treated = as.integer(Funding == 1)) 
+  mutate(threshold = ifelse(distance <= 0, 1, 0)) 
 #removing any NA binary assignment
 treated <- treated %>%
   drop_na()
 
 #NEED TO DEFINE TREATMENT IN A FUZZY CONTEXT
-rd <- rdrobust(
+rdProgram <- rdrobust(
  y = treated$Funding,
  x = treated$distance,
  fuzzy = treated$threshold,
- c = 0
 )
 
-summary(rd)
+summary(rdProgram)
+
+# ggplot(treated, aes(distance, Funding, color = threshold))+
+#   geom_smooth(data = treated %>% filter(threshold == 0), method = "lm") +
+#   geom_smooth(data = treated %>% filter(threshold == 1), method = "lm" ) +
+#   geom_point() #this is a good plot
 
 
-
-ggplot(treated, aes(distance, Funding, color = threshold))+
-  geom_smooth(data = treated %>% filter(threshold == 0), method = "lm") +
-  geom_smooth(data = treated %>% filter(threshold == 1), method = "lm" ) +
-  geom_point() #this is a good plot
-
-
-test <- lm(Funding ~ distance, treated)
-
-summary(test)

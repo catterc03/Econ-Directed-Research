@@ -3,6 +3,7 @@
 # Version 4.0
 # Desc: Base program to intake and clean data for ECON 3P60 research
 #
+
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
@@ -51,25 +52,26 @@ dwage <- dwage %>%
   slice(1) %>%  
   ungroup()
 
-dwage <- dwage %>%
-  mutate(Cluster = case_when(
-    Industry == "Agriculture, forestry, fishing and hunting [11]" ~ "Ocean Cluster",
-    Industry == "Manufacturing [31-33]" ~ "Advanced Manufacturing Cluster",
-    Industry == "Food manufacturing [311]" ~ "Protein Industries Cluster", #Need Data
-    Industry == "Utilities [22]" ~ "Digital Technologies Cluster",
-  )) %>%
-  mutate(clusterHQ = case_when(
-    Cluster == "Digital Technology Cluster" ~ "Vancouver, BC",
-    Cluster == "Protein Industries Cluster" ~ "Regina, SA",
-    Cluster == "Advanced Manufacturing Cluster" ~ "Hamilton, ON",
-    Cluster == "Ocean Cluster" ~ "St. Johns, NL",
-    Cluster == "Scale AI Cluster" ~ "Montreal, QC"
-  ))
+#Commented as this lacks data needed to properly outline
+# dwage <- dwage %>%
+#   mutate(Cluster = case_when(
+#     Industry == "Agriculture, forestry, fishing and hunting [11]" ~ "Ocean Cluster",
+#     Industry == "Manufacturing [31-33]" ~ "Advanced Manufacturing Cluster",
+#     Industry == "Food manufacturing [311]" ~ "Protein Industries Cluster", #Need Data
+#     Industry == "Utilities [22]" ~ "Digital Technologies Cluster",
+#   )) %>%
+#   mutate(clusterHQ = case_when(
+#     Cluster == "Digital Technology Cluster" ~ "Vancouver, BC",
+#     Cluster == "Protein Industries Cluster" ~ "Regina, SA",
+#     Cluster == "Advanced Manufacturing Cluster" ~ "Hamilton, ON",
+#     Cluster == "Ocean Cluster" ~ "St. Johns, NL",
+#     Cluster == "Scale AI Cluster" ~ "Montreal, QC"
+#   ))
 
-dwage <- regex_left_join(dwage, csdData21, by = c("clusterHQ" = "CSDNAME")) #need data
+# dwage <- regex_left_join(dwage, csdData21, by = c("clusterHQ" = "CSDNAME")) #need data
 
-dCmaCount <- dCmaCount %>%
-  drop_na()
+# dCmaCount <- dCmaCount %>%
+#   drop_na()
 
 
 
@@ -135,6 +137,13 @@ dCmaCount <- dCmaCount %>%
   rename(
     Geometry  = geometry.x,
     HQ.Geometry = geometry.y
+  )
+
+cmaDist = st_distance(dCmaCount$Geometry, dCmaCount$HQ.Geometry,  by_element = TRUE)
+
+dCmaCount <- dCmaCount %>%
+  mutate(
+    dist = cmaDist
   )
 
 ##ShapeFile stuff
@@ -211,8 +220,9 @@ dCSI <- dCSI %>%
 dCSI <- dCSI %>%
   distinct(Project.Title.and.Description, .keep_all = TRUE)
 
+#Calculate distances and assign signs to ensure variance on both sides of the threshold
 FSACentroid <- st_centroid(dCSI$FSA.Geometry)
-DistanceToBorder <- st_distance(FSACentroid, st_boundary(dCSI$HQ.Geometry),by_element = TRUE)#calculate distance to border
+DistanceToBorder <- st_distance(FSACentroid, st_boundary(dCSI$HQ.Geometry),by_element = TRUE)
 insideCheck <- st_within(FSACentroid, dCSI$HQ.Geometry, sparse = FALSE)[,1]
 
 #Assign negative values to distances within the border
